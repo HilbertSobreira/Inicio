@@ -1,0 +1,358 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MercadoLivreClone());
+}
+
+class MercadoLivreClone extends StatelessWidget {
+  const MercadoLivreClone({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Mercado Livre Clone',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
+        useMaterial3: true,
+      ),
+      home: const HomePage(),
+    );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final List<Map<String, String>> produtos = const [
+    {'titulo': 'Notebook Dell i5', 'preco': 'R\$ 3.200,00'},
+    {'titulo': 'Air Fryer Mondial', 'preco': 'R\$ 399,00'},
+    {'titulo': 'TV 50" 4K Samsung', 'preco': 'R\$ 2.799,00'},
+  ];
+
+  final List<String> atalhos = const [
+    'Ofertas',
+    'Categorias',
+    'Play',
+    'Favoritos',
+  ];
+
+  // Lista de produtos favoritos (simulando carrinho de compras)
+  List<Map<String, String>> produtosFavoritos = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey.shade100,
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 255, 237, 72),
+        title: const SearchBar(),
+        actions: [
+          // Adicionando o botão de carrinho
+          IconButton(
+            icon: const Icon(Icons.shopping_cart),
+            onPressed: () {
+              // Navegar para a tela de carrinho
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) =>
+                          CarrinhoPage(produtosFavoritos: produtosFavoritos),
+                ),
+              );
+            },
+          ),
+          // Adicionando o botão de menu
+          IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MoreMenuPage()),
+              );
+            },
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildAtalhos(),
+            const SizedBox(height: 20),
+            _buildListaProdutos(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAtalhos() {
+    return GridView.builder(
+      shrinkWrap: true,
+      itemCount: atalhos.length,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+      ),
+      itemBuilder: (context, index) {
+        return Column(
+          children: [
+            CircleAvatar(
+              backgroundColor: Colors.amber,
+              child: Icon(Icons.star, color: Colors.white),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              atalhos[index],
+              style: const TextStyle(fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildListaProdutos() {
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: produtos.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      itemBuilder: (context, index) {
+        final item = produtos[index];
+        return Card(
+          child: ListTile(
+            leading: const Icon(Icons.shopping_bag, color: Colors.amber),
+            title: Text(item['titulo']!),
+            subtitle: Text(item['preco']!),
+            trailing: IconButton(
+              icon: const Icon(Icons.favorite_border),
+              onPressed: () {
+                // Adiciona ou remove do carrinho (favoritos)
+                setState(() {
+                  if (produtosFavoritos.contains(item)) {
+                    produtosFavoritos.remove(item);
+                  } else {
+                    produtosFavoritos.add(item);
+                  }
+                });
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class CarrinhoPage extends StatelessWidget {
+  final List<Map<String, String>> produtosFavoritos;
+
+  const CarrinhoPage({super.key, required this.produtosFavoritos});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 255, 237, 72),
+        title: const Text('Carrinho de Compras'),
+      ),
+      body:
+          produtosFavoritos.isEmpty
+              ? const Center(child: Text('Seu carrinho está vazio!'))
+              : ListView.builder(
+                itemCount: produtosFavoritos.length,
+                itemBuilder: (context, index) {
+                  final item = produtosFavoritos[index];
+                  return Card(
+                    child: ListTile(
+                      leading: const Icon(
+                        Icons.shopping_bag,
+                        color: Colors.amber,
+                      ),
+                      title: Text(item['titulo']!),
+                      subtitle: Text(item['preco']!),
+                    ),
+                  );
+                },
+              ),
+    );
+  }
+}
+
+class SearchBar extends StatelessWidget {
+  const SearchBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const SearchPage()));
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        height: 45,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(32),
+        ),
+        child: Row(
+          children: const [
+            Icon(Icons.search, color: Colors.grey),
+            SizedBox(width: 8),
+            Text(
+              'Buscar no Mercado Livre',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SearchPage extends StatefulWidget {
+  const SearchPage({super.key});
+
+  @override
+  State<SearchPage> createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  final TextEditingController _controller = TextEditingController();
+  final List<String> _buscasRecentes = ['tv', 'notebook', 'geladeira', 'ps5'];
+
+  @override
+  void initState() {
+    super.initState();
+    // Ativa o teclado automaticamente
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(_focusNode);
+    });
+  }
+
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: TextField(
+          controller: _controller,
+          focusNode: _focusNode,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'O que você está buscando?',
+            border: InputBorder.none,
+          ),
+        ),
+        backgroundColor: Colors.amber[700],
+      ),
+      body: ListView.builder(
+        itemCount: _buscasRecentes.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            leading: const Icon(Icons.history),
+            title: Text(_buscasRecentes[index]),
+            onTap: () {
+              // Ação simulada ao clicar em uma busca
+              Navigator.pop(context);
+              // Aqui você pode passar a busca de volta ou ir para uma tela de resultados
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class MoreMenuPage extends StatelessWidget {
+  const MoreMenuPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Map<String, dynamic>> menuOptions = [
+      {'icon': Icons.person, 'title': 'Meus dados'},
+      {'icon': Icons.shopping_cart, 'title': 'Compras'},
+      {'icon': Icons.store, 'title': 'Vendas', 'page': ProdutosVendidosPage()},
+      {'icon': Icons.favorite, 'title': 'Favoritos'},
+      {'icon': Icons.credit_card, 'title': 'Cartões'},
+      {'icon': Icons.help, 'title': 'Ajuda'},
+      {'icon': Icons.settings, 'title': 'Configurações'},
+      {'icon': Icons.logout, 'title': 'Sair'},
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Mais opções'),
+        backgroundColor: Colors.amber[700],
+      ),
+      body: ListView.separated(
+        itemCount: menuOptions.length,
+        separatorBuilder: (_, __) => const Divider(),
+        itemBuilder: (context, index) {
+          final option = menuOptions[index];
+          return ListTile(
+            leading: Icon(option['icon'], color: Colors.amber[700]),
+            title: Text(option['title']),
+            onTap: () {
+              if (option.containsKey('page')) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => option['page']),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Clicou em "${option['title']}"')),
+                );
+              }
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class ProdutosVendidosPage extends StatelessWidget {
+  const ProdutosVendidosPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Map<String, String>> produtos = [
+      {'nome': 'Smartphone Xiaomi Redmi Note 12', 'preco': 'R\$ 1.299,00'},
+      {'nome': 'Fone Bluetooth JBL Tune 510BT', 'preco': 'R\$ 229,90'},
+      {'nome': 'Notebook Dell Inspiron i15', 'preco': 'R\$ 3.899,00'},
+      {'nome': 'Monitor LG UltraWide 29"', 'preco': 'R\$ 1.199,00'},
+      {'nome': 'Cadeira Gamer ThunderX3', 'preco': 'R\$ 899,00'},
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Produtos Vendidos'),
+        backgroundColor: Colors.amber[700],
+      ),
+      body: ListView.builder(
+        itemCount: produtos.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            leading: const Icon(Icons.check_circle, color: Colors.green),
+            title: Text(produtos[index]['nome']!),
+            subtitle: Text(produtos[index]['preco']!),
+          );
+        },
+      ),
+    );
+  }
+}
